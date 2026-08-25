@@ -1,0 +1,8 @@
+name名称 = "newsnow"
+pages_build_output_dir页面构建输出目录 = "dist/output/public"
+compatibility_date = "2024-10-03"兼容日期 = "2024-10-03"兼容日期 = "2024-10-03"兼容日期 = "2024-10-03"
+
+[[d1_databases]]
+binding = "NEWSNOW_DB"绑定 = "NEWSNOW_DB"绑定 = "NEWSNOW_DB"绑定 = "NEWSNOW_DB"
+database_name = "newsnow-db"数据库名称 = "newsnow-db"数据库名称 = "newsnow-db"数据库名称 = "newsnow-db"数据库名称 = "newsnow-db"数据库名称 = "newsnow-db"数据库名称 = "newsnow-db"
+database_id = ""数据库ID = ""

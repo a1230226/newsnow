@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""每日金融简报(v4.1最终版)：23品种真实行情全覆盖 + 规则定方向(SPECIFIC+GENERIC) + 情绪统计 + 受限AI"""
+"""每日金融简报(v4.1最终版+UA修复)：23品种真实行情全覆盖 + 规则定方向 + 情绪统计 + 受限AI"""
 import json, os, re, urllib.request, urllib.parse, sys
 from datetime import datetime, timezone, timedelta
 
@@ -10,7 +10,6 @@ CF_ACC   = os.environ["CF_ACCOUNT_ID"]
 CF_MODEL = os.environ.get("CF_MODEL", "@cf/meta/llama-3.3-70b-instruct-fp8-fast")
 SCT_KEY  = os.environ["SCT_KEY"]
 
-# ========== ① 品种词表 ==========
 KEYWORDS = {
     "螺纹钢": ["螺纹钢","螺纹","期螺","沪螺","粗钢","限产","钢铁"],
     "铁矿石": ["铁矿石","铁矿","普氏","澳矿","高炉"],
@@ -36,8 +35,6 @@ KEYWORDS = {
     "工业硅": ["工业硅","多晶硅","硅料","有机硅"],
     "碳酸锂": ["碳酸锂","锂价","锂矿","盐湖"],
 }
-
-# ========== ② 方向规则（v4.1：品种特定 + 通用方向词双重匹配）==========
 SPECIFIC = {
     "螺纹钢": (["限产","压减","去库","降库","收储","挺价"], ["增产","复产","扩产","累库","补库","抛售"]),
     "铁矿石": (["发运下降","港口库存下降","矿山事故","停运"], ["发运回升","累库"]),
@@ -58,11 +55,7 @@ GENERIC = {
     "利空": ["下跌","大跌","走低","走弱","回落","跳水","创新低","跌停","降价","抛售",
              "增产","复产","扩产","累库","补库","需求疲软","缓解","加息","缩表","美元走强","抛储","过剩"],
 }
-EXCLUDE = {
-    "玻璃": ["玻璃纤维"],
-}
-
-# ========== ③ 行情模块（五大交易所全覆盖，实测 23/23）==========
+EXCLUDE = {"玻璃": ["玻璃纤维"]}
 FS = "m:113,m:114,m:115,m:142,m:225"
 NAME_FIX = {"沪铜": "铜", "沪铝": "铝", "沪银": "白银", "沪金": "黄金",
             "沪铅": "铅", "沪锡": "锡", "沪锌": "锌", "沪镍": "镍"}
@@ -73,7 +66,6 @@ def _http_text(url, headers, timeout=20):
         return r.read().decode("utf-8", "ignore")
 
 def fetch_quotes():
-    """23品种真实行情：分页收集全部主连（API每页上限100条，需12页）"""
     hdrs = {"Referer": "https://quote.eastmoney.com/", "User-Agent": "Mozilla/5.0"}
     rows = []
     for pn in range(1, 13):
@@ -102,7 +94,6 @@ def fetch_quotes():
     movers.sort(key=lambda x: x[2], reverse=True)
     return quotes, movers
 
-# ========== ④ 正文抓取（真摘要素材）==========
 def fetch_body(url, maxlen=120):
     if not url:
         return None
@@ -127,11 +118,13 @@ def fetch_body(url, maxlen=120):
         return t[:maxlen] if len(t) >= 10 else None
     return None
 
-# ========== ⑤ 新闻采集 ==========
 SOURCES = ["cls-telegraph", "jin10", "wallstreetcn-quick", "xueqiu-hotstock", "myeastmoney"]
 
 def http_json(url, data=None, headers=None, method=None):
-    req = urllib.request.Request(url, data=data, headers=headers or {}, method=method)
+    h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"}
+    if headers:
+        h.update(headers)
+    req = urllib.request.Request(url, data=data, headers=h, method=method)
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.loads(r.read().decode("utf-8"))
 
@@ -152,11 +145,10 @@ if not items:
 
 for it in items[:5]:
     if it["source"] == "jin10":
-        it["body"] = it["title"][:120]      # 金十快讯标题即全文
+        it["body"] = it["title"][:120]
     else:
         it["body"] = fetch_body(it["url"])
 
-# ========== ⑥ 规则引擎（v4.1：SPECIFIC + GENERIC + EXCLUDE）==========
 def analyze_news(title):
     hits = []
     for v, kws in KEYWORDS.items():
@@ -181,7 +173,6 @@ def analyze_news(title):
         hits.append((v, d, kw, dw))
     return hits
 
-# ========== ⑦ 受限 AI（全失败也不崩，降级规则版）==========
 def ai_analyze(prompt):
     body = json.dumps({"messages": [
         {"role": "system", "content": "你是金融新闻分析助手。对每条新闻写：reason(1句逻辑说明，必须基于提供的标题和正文摘录，禁止编造任何数字、价格、百分比、事件、目标价位) 和 outlook(1句定性前瞻，禁止任何数字和价位)。信息不足写'信息不足，需进一步核实'。只输出JSON数组。"},
@@ -214,9 +205,8 @@ except Exception:
             raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
         rows = json.loads(raw)
     except Exception:
-        rows = []    # AI 彻底失败 → 规则版简报，不崩溃
+        rows = []
 
-# ========== ⑧ 生成简报 ==========
 quotes, movers = fetch_quotes()
 bj = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M")
 
@@ -239,7 +229,6 @@ big = [(n, p, z) for n, p, z in movers if abs(z) >= 1.5]
 md = ["# 📰 每日金融新闻简报（v4.1最终版）",
       f"生成时间: 北京时间 {bj}",
       "> ⚠️ 行情为最近收盘/夜盘数据（非实时盘中）；数字来自东财真实接口（23品种全覆盖），方向判定为规则命中（可核对），AI 不参与编数。", ""]
-
 md.append("## 📊 行情快照（真实数据·23品种）")
 md.append("| 品种 | 最新价 | 涨跌幅 |")
 md.append("|---|---|---|")
@@ -251,7 +240,6 @@ for name in KEYWORDS:
     else:
         md.append(f"| {name} | — | 获取失败 |")
 md.append("")
-
 md.append(f"## 📈📉 市场情绪（真实数据统计）：{sentiment}")
 md.append(f"- {sent_desc}")
 md.append("")
@@ -263,7 +251,6 @@ if down3:
 if big:
     md.append(f"- 波动≥1.5%品种 {len(big)} 个（{'、'.join(n for n, _, _ in big[:5])}…），波动加剧，注意仓位风险")
 md.append("")
-
 md.append("## 📰 新闻×方向（规则判定·命中词可核对）")
 for i, it in enumerate(items[:10], 1):
     hits = analyze_news(it["title"])
@@ -283,13 +270,11 @@ for i, it in enumerate(items[:10], 1):
     md.append(f"- 🔗 逻辑：{ai.get('reason', '—') if ai else '—'}")
     md.append(f"- 🔭 前瞻：{ai.get('outlook', '—') if ai else '—'}")
     md.append("")
-
 brief = "\n".join(md)
 print(brief[:500])
 with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "a", encoding="utf-8") as f:
     f.write(brief)
 
-# ⑨ 推送
 if SCT_KEY:
     data2 = urllib.parse.urlencode({"title": "📰 每日金融新闻简报（v4.1最终版）", "desp": brief}).encode()
     http_json(f"https://sctapi.ftqq.com/{SCT_KEY}.send", data=data2,

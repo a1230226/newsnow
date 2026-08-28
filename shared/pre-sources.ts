@@ -213,6 +213,13 @@ export const originSources = {
       },
     },
   },
+   "myeastmoney": {
+    name: "东方财富",
+    color: "red",
+    home: "https://www.eastmoney.com/",
+    column: "finance",
+    type: "realtime"
+  },
   "cls": {
     name: "财联社",
     color: "red",
@@ -528,13 +535,7 @@ export const originSources = {
       },
     },
   },
-    "myeastmoney": {
-    name: "东方财富",
-    color: "red",
-    home: "https://www.eastmoney.com/",
-    column: "finance",
-    type: "realtime"
-  },
+   
 } as const satisfies Record<string, OriginSource>
 
 export function genSources() {

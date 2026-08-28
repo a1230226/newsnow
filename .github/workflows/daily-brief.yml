@@ -1,0 +1,35 @@
+name: 每日金融新闻简报
+
+on:
+  schedule:
+    # UTC 23:30 = 北京时间 07:30
+    - cron: '30 23 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: daily-brief
+  cancel-in-progress: false
+
+jobs:
+  generate-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 运行简报生成脚本
+        env:
+          NEWSNOW_BASE: ${{ secrets.NEWSNOW_BASE }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_MODEL: "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+          SCT_KEY: ${{ secrets.SCT_KEY }}
+        run: python3 .github/workflows/daily_brief.py
+
+      - name: 推送失败自动告警
+        if: failure()
+        run: |
+          curl -s -X POST "https://sctapi.ftqq.com/${{ secrets.SCT_KEY }}.send" \
+            -d "title=⚠️ 每日简报生成失败" \
+            -d "desp=请查看 GitHub Actions 日志排查。"

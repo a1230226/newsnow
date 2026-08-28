@@ -218,7 +218,7 @@ export const originSources = {
     color: "red",
     home: "https://www.eastmoney.com/",
     column: "finance",
-    type: "realtime"
+    type: "hottest"
   },
   "cls": {
     name: "财联社",

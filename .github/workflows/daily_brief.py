@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""每日金融简报(v4.1最终版+UA修复)：23品种真实行情全覆盖 + 规则定方向 + 情绪统计 + 受限AI"""
+"""每日金融简报(v4.2最终版)：23品种真实行情 + 规则定方向 + 情绪统计 + 受限AI + 无数据跳过"""
 import json, os, re, urllib.request, urllib.parse, sys
 from datetime import datetime, timezone, timedelta
 
@@ -65,7 +65,16 @@ def _http_text(url, headers, timeout=20):
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read().decode("utf-8", "ignore")
 
+def http_json(url, data=None, headers=None, method=None):
+    h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"}
+    if headers:
+        h.update(headers)
+    req = urllib.request.Request(url, data=data, headers=h, method=method)
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.loads(r.read().decode("utf-8"))
+
 def fetch_quotes():
+    """23品种真实行情。修复：无成交合约返回 '-' 字符串 → 跳过不编数"""
     hdrs = {"Referer": "https://quote.eastmoney.com/", "User-Agent": "Mozilla/5.0"}
     rows = []
     for pn in range(1, 13):
@@ -88,9 +97,13 @@ def fetch_quotes():
         for p, s in NAME_FIX.items():
             if base.startswith(p):
                 base = s + base[len(p):]
-        quotes[base] = {"p": it.get("f2"), "zdf": it.get("f3")}
-        if it.get("f3") is not None and it.get("f2") is not None:
-            movers.append((nm, it.get("f2"), it.get("f3")))
+        try:
+            p = float(it.get("f2"))
+            zdf = float(it.get("f3"))
+        except (TypeError, ValueError):
+            continue        # 无成交/非数字（如 "-"）→ 跳过，不编数
+        quotes[base] = {"p": p, "zdf": zdf}
+        movers.append((nm, p, zdf))
     movers.sort(key=lambda x: x[2], reverse=True)
     return quotes, movers
 
@@ -119,14 +132,6 @@ def fetch_body(url, maxlen=120):
     return None
 
 SOURCES = ["cls-telegraph", "jin10", "wallstreetcn-quick", "xueqiu-hotstock", "myeastmoney"]
-
-def http_json(url, data=None, headers=None, method=None):
-    h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"}
-    if headers:
-        h.update(headers)
-    req = urllib.request.Request(url, data=data, headers=h, method=method)
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return json.loads(r.read().decode("utf-8"))
 
 news = {}
 for sid in SOURCES:
@@ -226,9 +231,9 @@ up3 = [m for m in movers if m[2] > 0][:3]
 down3 = [m for m in movers if m[2] < 0][-3:][::-1]
 big = [(n, p, z) for n, p, z in movers if abs(z) >= 1.5]
 
-md = ["# 📰 每日金融新闻简报（v4.1最终版）",
+md = ["# 📰 每日金融新闻简报（v4.2最终版）",
       f"生成时间: 北京时间 {bj}",
-      "> ⚠️ 行情为最近收盘/夜盘数据（非实时盘中）；数字来自东财真实接口（23品种全覆盖），方向判定为规则命中（可核对），AI 不参与编数。", ""]
+      "> ⚠️ 行情为最近收盘/夜盘数据（非实时盘中）；数字来自东财真实接口，方向判定为规则命中（可核对），AI 不参与编数。", ""]
 md.append("## 📊 行情快照（真实数据·23品种）")
 md.append("| 品种 | 最新价 | 涨跌幅 |")
 md.append("|---|---|---|")
@@ -276,7 +281,7 @@ with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "a", encoding="utf
     f.write(brief)
 
 if SCT_KEY:
-    data2 = urllib.parse.urlencode({"title": "📰 每日金融新闻简报（v4.1最终版）", "desp": brief}).encode()
+    data2 = urllib.parse.urlencode({"title": "📰 每日金融新闻简报（v4.2最终版）", "desp": brief}).encode()
     http_json(f"https://sctapi.ftqq.com/{SCT_KEY}.send", data=data2,
               headers={"Content-Type": "application/x-www-form-urlencoded"})
     print("已推送到微信")

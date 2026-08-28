@@ -172,6 +172,7 @@ export const originSources = {
     home: "https://www.ithome.com",
   },
   "thepaper": {
+    disable: true,
     name: "澎湃新闻",
     interval: Time.Common,
     type: "hottest",
@@ -279,6 +280,7 @@ export const originSources = {
     interval: Time.Slow,
   },
   "hackernews": {
+    disable: true,
     name: "Hacker News",
     color: "orange",
     column: "tech",
@@ -286,6 +288,7 @@ export const originSources = {
     home: "https://news.ycombinator.com/",
   },
   "producthunt": {
+    disable: true,
     name: "Product Hunt",
     color: "red",
     column: "tech",
@@ -384,6 +387,7 @@ export const originSources = {
     },
   },
   "ghxi": {
+    disable: true,
     name: "果核剥壳",
     column: "china",
     color: "yellow",
@@ -399,6 +403,7 @@ export const originSources = {
     disable: true,
   },
   "nowcoder": {
+    disable: true,
     name: "牛客",
     column: "china",
     color: "blue",
@@ -406,6 +411,7 @@ export const originSources = {
     home: "https://www.nowcoder.com",
   },
   "sspai": {
+    disable: true,
     name: "少数派",
     column: "tech",
     color: "red",
@@ -482,6 +488,7 @@ export const originSources = {
     },
   },
   "freebuf": {
+    disable: true,
     name: "Freebuf",
     column: "china",
     title: "网络安全",

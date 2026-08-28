@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""每日金融简报(v4.2最终版)：23品种真实行情 + 规则定方向 + 情绪统计 + 受限AI + 无数据跳过"""
+"""每日金融简报(v4.3最终版)：23品种真实行情 + 规则定方向 + 情绪统计 + 受限AI + 原文链接"""
 import json, os, re, urllib.request, urllib.parse, sys
 from datetime import datetime, timezone, timedelta
 
@@ -74,7 +74,6 @@ def http_json(url, data=None, headers=None, method=None):
         return json.loads(r.read().decode("utf-8"))
 
 def fetch_quotes():
-    """23品种真实行情。修复：无成交合约返回 '-' 字符串 → 跳过不编数"""
     hdrs = {"Referer": "https://quote.eastmoney.com/", "User-Agent": "Mozilla/5.0"}
     rows = []
     for pn in range(1, 13):
@@ -101,7 +100,7 @@ def fetch_quotes():
             p = float(it.get("f2"))
             zdf = float(it.get("f3"))
         except (TypeError, ValueError):
-            continue        # 无成交/非数字（如 "-"）→ 跳过，不编数
+            continue
         quotes[base] = {"p": p, "zdf": zdf}
         movers.append((nm, p, zdf))
     movers.sort(key=lambda x: x[2], reverse=True)
@@ -231,7 +230,7 @@ up3 = [m for m in movers if m[2] > 0][:3]
 down3 = [m for m in movers if m[2] < 0][-3:][::-1]
 big = [(n, p, z) for n, p, z in movers if abs(z) >= 1.5]
 
-md = ["# 📰 每日金融新闻简报（v4.2最终版）",
+md = ["# 📰 每日金融新闻简报（v4.3最终版）",
       f"生成时间: 北京时间 {bj}",
       "> ⚠️ 行情为最近收盘/夜盘数据（非实时盘中）；数字来自东财真实接口，方向判定为规则命中（可核对），AI 不参与编数。", ""]
 md.append("## 📊 行情快照（真实数据·23品种）")
@@ -256,7 +255,7 @@ if down3:
 if big:
     md.append(f"- 波动≥1.5%品种 {len(big)} 个（{'、'.join(n for n, _, _ in big[:5])}…），波动加剧，注意仓位风险")
 md.append("")
-md.append("## 📰 新闻×方向（规则判定·命中词可核对）")
+md.append("## 📰 新闻×方向（规则判定·命中词可核对·含原文链接）")
 for i, it in enumerate(items[:10], 1):
     hits = analyze_news(it["title"])
     if hits:
@@ -272,6 +271,7 @@ for i, it in enumerate(items[:10], 1):
     md.append(f"### {i}. {it['title']}")
     md.append(f"- 🧭 规则判定：{rule_txt}")
     md.append(f"- 📝 摘要（真实正文/标题）：{summary}")
+    md.append(f"- 🔗 原文链接：{it.get('url') or '—'}")
     md.append(f"- 🔗 逻辑：{ai.get('reason', '—') if ai else '—'}")
     md.append(f"- 🔭 前瞻：{ai.get('outlook', '—') if ai else '—'}")
     md.append("")
@@ -281,7 +281,7 @@ with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "a", encoding="utf
     f.write(brief)
 
 if SCT_KEY:
-    data2 = urllib.parse.urlencode({"title": "📰 每日金融新闻简报（v4.2最终版）", "desp": brief}).encode()
+    data2 = urllib.parse.urlencode({"title": "📰 每日金融新闻简报（v4.3最终版）", "desp": brief}).encode()
     http_json(f"https://sctapi.ftqq.com/{SCT_KEY}.send", data=data2,
               headers={"Content-Type": "application/x-www-form-urlencoded"})
     print("已推送到微信")

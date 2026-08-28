@@ -25,6 +25,7 @@ export const originSources = {
     },
   },
   "zhihu": {
+    disable: true,
     name: "知乎",
     type: "hottest",
     column: "china",
@@ -32,6 +33,7 @@ export const originSources = {
     home: "https://www.zhihu.com",
   },
   "weibo": {
+    disable: true,
     name: "微博",
     title: "实时热搜",
     type: "hottest",
@@ -50,6 +52,7 @@ export const originSources = {
     home: "https://www.zaobao.com",
   },
   "coolapk": {
+    disable: true,
     name: "酷安",
     type: "hottest",
     column: "tech",
@@ -92,6 +95,7 @@ export const originSources = {
     },
   },
   "36kr": {
+    disable: true,
     name: "36氪",
     type: "realtime",
     color: "blue",
@@ -109,6 +113,7 @@ export const originSources = {
     },
   },
   "douyin": {
+    disable: true,
     name: "抖音",
     type: "hottest",
     column: "china",
@@ -116,6 +121,7 @@ export const originSources = {
     home: "https://www.douyin.com",
   },
   "hupu": {
+    disable: true,
     name: "虎扑",
     home: "https://hupu.com",
     column: "sports",
@@ -124,6 +130,7 @@ export const originSources = {
     color: "red",
   },
   "dongqiudi": {
+    disable: true,
     name: "懂球帝",
     title: "头条",
     type: "realtime",
@@ -140,6 +147,7 @@ export const originSources = {
     home: "https://aihot.virxact.com/all",
   },
   "tieba": {
+    disable: true,
     name: "百度贴吧",
     title: "热议",
     column: "china",
@@ -148,6 +156,7 @@ export const originSources = {
     home: "https://tieba.baidu.com",
   },
   "toutiao": {
+    disable: true,
     name: "今日头条",
     type: "hottest",
     column: "china",
@@ -155,6 +164,7 @@ export const originSources = {
     home: "https://www.toutiao.com",
   },
   "ithome": {
+    disable: true,
     name: "IT之家",
     color: "red",
     column: "tech",
@@ -295,6 +305,7 @@ export const originSources = {
     },
   },
   "bilibili": {
+    disable: true,
     name: "哔哩哔哩",
     color: "blue",
     home: "https://www.bilibili.com",
@@ -320,6 +331,7 @@ export const originSources = {
     },
   },
   "kuaishou": {
+    disable: true,
     name: "快手",
     type: "hottest",
     column: "china",
@@ -329,6 +341,7 @@ export const originSources = {
     home: "https://www.kuaishou.com",
   },
   "kaopu": {
+    disable: true,
     name: "靠谱新闻",
     column: "world",
     color: "gray",
@@ -344,6 +357,7 @@ export const originSources = {
     home: "https://www.jin10.com",
   },
   "baidu": {
+    disable: true,
     name: "百度热搜",
     column: "china",
     color: "blue",
@@ -399,6 +413,7 @@ export const originSources = {
     home: "https://sspai.com",
   },
   "juejin": {
+    disable: true,
     name: "稀土掘金",
     column: "tech",
     color: "blue",
@@ -414,6 +429,7 @@ export const originSources = {
     home: "https://www.ifeng.com",
   },
   "chongbuluo": {
+    disable: true,
     name: "虫部落",
     column: "china",
     color: "green",
@@ -433,6 +449,7 @@ export const originSources = {
     },
   },
   "douban": {
+    disable: true,
     name: "豆瓣",
     column: "china",
     title: "热门电影",
@@ -441,6 +458,7 @@ export const originSources = {
     home: "https://www.douban.com",
   },
   "steam": {
+    disable: true,
     name: "Steam",
     column: "world",
     title: "在线人数",
@@ -449,6 +467,7 @@ export const originSources = {
     home: "https://store.steampowered.com",
   },
   "tencent": {
+    disable: true,
     name: "腾讯新闻",
     column: "china",
     color: "blue",
@@ -472,6 +491,7 @@ export const originSources = {
   },
 
   "qqvideo": {
+    disable: true,
     name: "腾讯视频",
     column: "china",
     color: "blue",
@@ -487,6 +507,7 @@ export const originSources = {
     },
   },
   "iqiyi": {
+    disable: true,
     name: "爱奇艺",
     column: "china",
     color: "green",
